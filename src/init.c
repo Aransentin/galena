@@ -20,11 +20,13 @@ void init_cl_pre( void )
 	if( dcnt == 0 )
 		xplat_error( "No OpenCL device found." );
 	
+    #if !defined( NOSHARING )
 	char extstr[2048] = { 0 };
 	err = clGetDeviceInfo( engine.cl.device, CL_DEVICE_EXTENSIONS, 2048, extstr, NULL );
 	CLFCHECK( err );
 	if ( !strstr( extstr, "cl_khr_gl_sharing") )
-		xplat_error( "Support for the OpenCL \"cl_khr_gl_sharing\" extension not found." );
+		xplat_error( "Compiled for the OpenCL \"cl_khr_gl_sharing\" extension, but it's not supported by the device." );
+    #endif
 }
 
 static void opencl_debug_callback( const char * errinfo, const void * private_info, size_t cb, void * user_data )
@@ -41,18 +43,20 @@ void init_cl_post( void )
 	cl_context_properties context_properties[] = 
 	{
 		CL_CONTEXT_PLATFORM, (cl_context_properties)engine.cl.platform,
-		#if defined(__linux__)
-		CL_GL_CONTEXT_KHR, (cl_context_properties)(glfwGetGLXContext( engine.gl.window )),
-		CL_GLX_DISPLAY_KHR, (cl_context_properties)(glfwGetX11Display()),
-		#elif defined(_WIN32)
-		CL_GL_CONTEXT_KHR, (cl_context_properties)(glfwGetWGLContext( engine.gl.window )),
-		CL_WGL_HDC_KHR, (cl_context_properties)(GetDC(glfwGetWin32Window( engine.gl.window ))),
-		#endif
+        #if !defined( NOSHARING )
+            #if defined(__linux__)
+            CL_GL_CONTEXT_KHR, (cl_context_properties)(glfwGetGLXContext( engine.gl.window )),
+            CL_GLX_DISPLAY_KHR, (cl_context_properties)(glfwGetX11Display()),
+            #elif defined(_WIN32)
+            CL_GL_CONTEXT_KHR, (cl_context_properties)(glfwGetWGLContext( engine.gl.window )),
+            CL_WGL_HDC_KHR, (cl_context_properties)(GetDC(glfwGetWin32Window( engine.gl.window ))),
+            #endif
+        #endif
 		0, 0,
 	};
 	
 	void (*callback)(const char *, const void *, size_t, void *) = NULL;
-	#ifdef DEBUG
+	#if defined( DEBUG )
 	callback = opencl_debug_callback;
 	#endif
 	
@@ -60,16 +64,25 @@ void init_cl_post( void )
 	CLFCHECK( err );
 	
 	cl_command_queue_properties cqprop = 0;
-	#ifdef DEBUG
+	#if defined( DEBUG )
 	cqprop = CL_QUEUE_PROFILING_ENABLE;
 	#endif
 	
 	engine.cl.queue = clCreateCommandQueue( engine.cl.context, engine.cl.device, cqprop, &err );
 	CLFCHECK( err );
 	
+    #if defined( NOSHARING )
+    const cl_image_format format = {
+        .image_channel_order = CL_RGBA,
+        .image_channel_data_type = CL_UNORM_INT8,
+    };
+    engine.cl.texture = clCreateImage2D( engine.cl.context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, &format, engine.cl.dim[0], engine.cl.dim[1], 0, NULL, &err );
+    CLFCHECK( err );
+    #else
 	engine.cl.texture = clCreateFromGLTexture2D( engine.cl.context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, engine.gl.texture, &err );
 	CLFCHECK( err );
-
+    #endif
+    
 	const char * ksrc = kernel_src_str;
 	engine.cl.program = clCreateProgramWithSource( engine.cl.context, 1, &ksrc, NULL, &err );
 	CLFCHECK( err );

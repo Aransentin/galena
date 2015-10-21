@@ -10,10 +10,10 @@ int main( void )
 	engine_init( dim_cl, dim_gl );
 	world_init( &engine.world );
 	
-	//while( 1 )
+	while( 1 )
 	{
-	//	if( engine_main() < 0 )
-	//		break;
+		if( engine_main() < 0 )
+			break;
 		
 		render_main();
 	}

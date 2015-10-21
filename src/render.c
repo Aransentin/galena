@@ -55,20 +55,25 @@ static void render_cl( void )
 	}
 	
 	cl_event * evptr = NULL;
-	#ifdef DEBUG
+	#if defined( DEBUG )
 	cl_event ev;
 	evptr = &ev;
 	#endif
 	
-	/* Acquire OpenGL texture & call the core kernel */
+	/* Acquire OpenGL texture (if applicable) & call the core kernel */
+    #if !defined( NOSHARING )
 	err = clEnqueueAcquireGLObjects( engine.cl.queue, 1, &engine.cl.texture, 0, NULL, NULL );
 	CLFCHECK( err );
+    #endif
+    
 	err = clEnqueueNDRangeKernel( engine.cl.queue, engine.cl.kernel_core, 2, NULL, worksize, NULL, 0, NULL, evptr );
 	CLFCHECK( err );
+    #if !defined( NOSHARING )
 	err = clEnqueueReleaseGLObjects( engine.cl.queue, 1, &engine.cl.texture, 0, NULL, NULL );
 	CLFCHECK( err );
-	
-	#ifdef DEBUG
+	#endif
+    
+	#if defined( DEBUG )
 	clWaitForEvents( 1 , &ev );
 	cl_ulong ts_start, ts_end;
 	static uint32_t counter = 0;

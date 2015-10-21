@@ -3,7 +3,7 @@
 #include <stdint.h>
 void funcload_load( void );
 
-/* Yeah, I'm trashing all that uint32_t crap. */
+/* Yeah, I'm trashing all that GLint crap. */
 #define GL_FALSE 0
 #define GL_TRUE 1
 #define GL_BLEND 0x0BE2

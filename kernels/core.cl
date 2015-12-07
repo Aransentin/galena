@@ -25,6 +25,7 @@ kernel void core( write_only image2d_t tex, Camera cam, const global OTnode * tr
 	float3 dir = normalize( cam.vo + cam.vx*(u/(float)DIM_X) + cam.vy*(v/(float)DIM_Y) );
 	float3 invdir = 1.0f/dir;
 	
+    
 	for( int dlp=0; dlp<1024; dlp++ )
 	{
 		/* Current voxel position of ray */

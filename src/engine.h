@@ -1,14 +1,14 @@
 #pragma once
 #include <stdint.h>
 
-#if defined(_WIN32)
-	#define GLFW_EXPOSE_NATIVE_WIN32
-	#define GLFW_EXPOSE_NATIVE_WGL
-#elif defined(__linux__)
-	#define GLFW_EXPOSE_NATIVE_X11
-	#define GLFW_EXPOSE_NATIVE_GLX
+#if defined( _WIN32 )
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
+#elif defined( __linux__ )
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_GLX
 #else
-	#error Your OS is not supported.
+#error Your OS is not supported.
 #endif
 
 #define GLFW_INCLUDE_NONE
@@ -21,32 +21,35 @@
 #include "kernels.src.h"
 #include "world.h"
 
-typedef struct{
-	struct{
-		uint32_t dim[2];
-		GLFWwindow * window;
-		uint32_t VAO;
-		uint32_t VBO;
-		uint32_t texture;
-		uint32_t program;
-	} gl;
-	
-	struct{
-		uint32_t dim[2];
-		cl_platform_id platform;
-		cl_device_id device;
-		cl_context context;
-		cl_command_queue queue;
-		cl_program program;
-		cl_mem texture;
-		cl_kernel kernel_core;
-		
-		cl_mem world_tree;
-		cl_mem world_voxels;
-	} cl;
+typedef struct
+{
+    struct
+    {
+        uint32_t dim[2];
+        GLFWwindow *window;
+        uint32_t VAO;
+        uint32_t VBO;
+        uint32_t texture;
+        uint32_t program;
+    } gl;
 
-	World world;
-	
+    struct
+    {
+        uint32_t dim[2];
+        cl_platform_id platform;
+        cl_device_id device;
+        cl_context context;
+        cl_command_queue queue;
+        cl_program program;
+        cl_mem texture;
+        cl_kernel kernel_core;
+
+        cl_mem world_tree;
+        cl_mem world_voxels;
+    } cl;
+
+    World world;
+
 } Engine;
 
 extern Engine engine;
